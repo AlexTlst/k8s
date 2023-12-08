@@ -3,6 +3,7 @@ pipeline {
     tools {
         terraform 'tf1.6'
     }
+
     stages {
         stage('Sparse Checkout') {
             steps {
@@ -22,29 +23,31 @@ pipeline {
             }
         }
 
-        stage('Terraform Initialize and Plan Destroy') {
+        stage('Terraform Plan') {
             steps {
                 sh '''
-                cd ./TF
-                terraform init
-                terraform plan -destroy -out=destroyplan.tfplan
+                echo "yes" | terraform init
+                terraform plan -out=terraform.tfplan
                 '''
             }
         }
-        
-        stage('Plan verification and user input for Destroy') {
+
+        stage('Plan verification and user input') {
             steps {
-                input message: 'proceed or abort?', ok: 'ok'
+                input(
+                    message: 'proceed or abort?', 
+                    ok: 'ok'
+                )
             }
         }
-        
-        stage('Terraform Apply Destroy') {
+
+        stage('Terraform Apply') {
             steps {
                 sh '''
-                cd ./TF
-                terraform apply destroyplan.tfplan
+                terraform apply terraform.tfplan
                 '''
             }
         }
+ 
     }
 }
