@@ -11,33 +11,33 @@ terraform {
   }
   
   resource "aws_s3_bucket" "petprojects_bucket" {
-  bucket = "terraform-state-petprojects"
-  acl    = "private"  # You can change the ACL as needed
+    bucket = "terraform-state-petprojects"
+    acl    = "private"
 
     versioning {
       enabled = true
-      }
+    }
 
     logging {
-      target_bucket = aws_s3_bucket.petprojects_bucket.bucket
+      target_bucket = aws_s3_bucket.petprojects_bucket.bucket  # Corrected this line
       target_prefix = "logs/"
-      }
+    }
 
     tags = {
       Terraform   = "true"
       Environment = "petprojects"
     }
- }
+  }
 
   backend "s3" {
     bucket = "terraform-state-petprojects"
     key    = "k3s_main_vpc/infra_setup.tfstate"
     region = "us-east-1"
   }
+  
   required_version = ">= 1.3"
 }
 
 provider "aws" {
   region = "us-east-1"
 }
-

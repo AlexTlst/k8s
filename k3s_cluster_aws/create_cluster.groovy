@@ -16,10 +16,10 @@ pipeline {
                               doGenerateSubmoduleConfigurations: false,
                               extensions: [[
                                   $class: 'SparseCheckoutPaths', 
-                                  sparseCheckoutPaths: [[path: 'projects/k3s_cluster_aws/cluster_init/']]
+                                  sparseCheckoutPaths: [[path: 'k3s_cluster_aws/cluster_init/']]
                               ]],
                               userRemoteConfigs: [[
-                                  url: 'https://github.com/OleksiiPasichnyk/Terraform.git'
+                                  url: 'https://github.com/AlexTlst/k8s.git'
                               ]]
                     ])
                 }
@@ -28,7 +28,7 @@ pipeline {
         stage('Terraform Plan - Main VPC') {
             steps {
                 sh '''
-                cd ./projects/k3s_cluster_aws/cluster_init/terraform/main_vpc_config
+                cd ./k3s_cluster_aws/cluster_init/terraform/main_vpc_config
                 terraform init -input=false
                 terraform plan -out=terraform.tfplan
                 '''
@@ -45,7 +45,7 @@ pipeline {
         stage('Terraform Apply - Main VPC') {
             steps {
                 sh '''
-                cd ./projects/k3s_cluster_aws/cluster_init/terraform/main_vpc_config
+                cd ./k3s_cluster_aws/cluster_init/terraform//main_vpc_config
                 terraform apply -input=false terraform.tfplan
                 '''
             }
@@ -53,7 +53,7 @@ pipeline {
         stage('Terraform Plan - Master Node') {
             steps {
                 sh '''
-                cd ./projects/k3s_cluster_aws/cluster_init/terraform/master_node_config
+                cd ./cluster_init/terraform/master_node_config
                 terraform init -input=false
                 terraform plan -out=terraform.tfplan
                 '''
@@ -70,7 +70,7 @@ pipeline {
         stage('Terraform Apply - Master Node') {
             steps {
                 sh '''
-                cd ./projects/k3s_cluster_aws/cluster_init/terraform/master_node_config
+                cd ./k3s_cluster_aws/cluster_init/terraform//master_node_config
                 terraform apply -input=false terraform.tfplan
                 terraform output -json k3s_master_instance_private_ip | jq -r 'if type == "array" then .[] else . end' > ../../ansible/master_ip.txt
                 terraform output -json k3s_master_instance_public_ip | jq -r 'if type == "array" then .[] else . end' > ../../ansible/master_ip_public.txt
@@ -80,7 +80,7 @@ pipeline {
         stage('Terraform Plan - Worker Nodes') {
             steps {
                 sh '''
-                cd ./projects/k3s_cluster_aws/cluster_init/terraform/worker_node_config
+                cd ./k3s_cluster_aws/cluster_init/terraform//worker_node_config
                 terraform init -input=false
                 terraform plan -out=terraform.tfplan
                 '''
@@ -97,13 +97,14 @@ pipeline {
         stage('Terraform Apply - Worker Nodes') {
             steps {
                 sh '''
-                cd ./projects/k3s_cluster_aws/cluster_init/terraform/worker_node_config
+                cd ./k3s_cluster_aws/cluster_init/terraform//worker_node_config
                 terraform apply -input=false terraform.tfplan
                 sleep 0
                 terraform output -json k3s_workers_instance_private_ip | jq -r '.[]' > ../../ansible/worker_ip.txt
                 '''
             }
-        }
+        }_______________________________________________________________________
+        
         stage('Install Ansible') {
             steps {
                 sh '''
