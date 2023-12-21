@@ -53,7 +53,7 @@ pipeline {
         stage('Terraform Plan - Master Node') {
             steps {
                 sh '''
-                cd ./cluster_init/terraform/master_node_config
+                cd ./k3s_cluster_aws/cluster_init/terraform/master_node_config
                 terraform init -input=false
                 terraform plan -out=terraform.tfplan
                 '''
@@ -70,7 +70,7 @@ pipeline {
         stage('Terraform Apply - Master Node') {
             steps {
                 sh '''
-                cd ./k3s_cluster_aws/cluster_init/terraform//master_node_config
+                cd ./k3s_cluster_aws/cluster_init/terraform/master_node_config
                 terraform apply -input=false terraform.tfplan
                 terraform output -json k3s_master_instance_private_ip | jq -r 'if type == "array" then .[] else . end' > ../../ansible/master_ip.txt
                 terraform output -json k3s_master_instance_public_ip | jq -r 'if type == "array" then .[] else . end' > ../../ansible/master_ip_public.txt
@@ -80,7 +80,7 @@ pipeline {
         stage('Terraform Plan - Worker Nodes') {
             steps {
                 sh '''
-                cd ./k3s_cluster_aws/cluster_init/terraform//worker_node_config
+                cd ./k3s_cluster_aws/cluster_init/terraform/worker_node_config
                 terraform init -input=false
                 terraform plan -out=terraform.tfplan
                 '''
@@ -97,14 +97,14 @@ pipeline {
         stage('Terraform Apply - Worker Nodes') {
             steps {
                 sh '''
-                cd ./k3s_cluster_aws/cluster_init/terraform//worker_node_config
+                cd ./k3s_cluster_aws/cluster_init/terraform/worker_node_config
                 terraform apply -input=false terraform.tfplan
                 sleep 0
                 terraform output -json k3s_workers_instance_private_ip | jq -r '.[]' > ../../ansible/worker_ip.txt
                 '''
             }
-        }_______________________________________________________________________
-
+        }
+        
         stage('Install Ansible') {
             steps {
                 sh '''
@@ -114,11 +114,12 @@ pipeline {
                 '''
             }
         }
+        
         stage('Run Ansible Playbooks') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'docker_k', keyFileVariable: 'SSH_KEY')]) {
                 sh '''
-                cd ./projects/k3s_cluster_aws/cluster_init/ansible
+                cd ./k3s_cluster_aws/cluster_init/ansible
                 ansible-playbook -i master_ip.txt master_setup.yml -u ubuntu --private-key=$SSH_KEY -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'
                 ansible-playbook -i worker_ip.txt worker_setup.yml -u ubuntu --private-key=$SSH_KEY -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'
                 '''

@@ -1,0 +1,8 @@
+1. Create VPC peering in AWS between Jenkins and K3S:
+- Find the route table that serve Jenkins instance
+- Add route: Dest IP 10.0.0.0/16 to Target "K3s_VPC_Peering" with type "peernig connection"
+
+2. Open on K3S_Master: sudo cat /etc/rancher/k3s/k3s.yaml
+- copy all from file and change to public IP in string "server: https://127.0.0.1:6443"
+- on your laptop find config file and fill it with the data from previous step (~/.kube)
+- choose kubens --> default
