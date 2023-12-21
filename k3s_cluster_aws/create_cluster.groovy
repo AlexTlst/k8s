@@ -45,7 +45,7 @@ pipeline {
         stage('Terraform Apply - Main VPC') {
             steps {
                 sh '''
-                cd ./k3s_cluster_aws/cluster_init/terraform//main_vpc_config
+                cd ./k3s_cluster_aws/cluster_init/terraform/main_vpc_config
                 terraform apply -input=false terraform.tfplan
                 '''
             }
@@ -104,7 +104,7 @@ pipeline {
                 '''
             }
         }_______________________________________________________________________
-        
+
         stage('Install Ansible') {
             steps {
                 sh '''
@@ -116,7 +116,7 @@ pipeline {
         }
         stage('Run Ansible Playbooks') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'access_for_new_node_js_app', keyFileVariable: 'SSH_KEY')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'docker_k', keyFileVariable: 'SSH_KEY')]) {
                 sh '''
                 cd ./projects/k3s_cluster_aws/cluster_init/ansible
                 ansible-playbook -i master_ip.txt master_setup.yml -u ubuntu --private-key=$SSH_KEY -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'

@@ -58,4 +58,11 @@ resource "aws_security_group" "k3s_sg" {
     protocol    = "udp"
     cidr_blocks = [aws_vpc.k3s_vpc.cidr_block] // Adjust this to match your VPC CIDR
   }
+  
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
